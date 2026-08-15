@@ -1,46 +1,38 @@
-Bug Report
+# Bug Report
 
-Bug #1 — Pagination returns incorrect results for page 1
+## Bug #1 — Pagination Returns Incorrect Results for Page 1 and Page 2
 
 Bug ID: BUG-001
-Title: GET /tasks?page=1&limit=10 returns tasks 11–15 instead of tasks 1–10
+Title: GET /tasks pagination returns incorrect results for page 1 and page 2
 Severity: Medium
 Priority: High
 Status: Open
 Affected functionality: Task pagination
-Found by: API Test and Unit Test
+Found by: API Integration Tests and Unit Tests
 
-Description
 
-The pagination logic uses an incorrect offset calculation.
+## Description
 
-When requesting:
+The task pagination logic uses an incorrect offset calculation.
 
-GET /tasks?page=1&limit=10
+The API uses 1-based pagination, where:
 
-the API is expected to return the first 10 tasks:
+- Page 1 should contain Task 1–10
+- Page 2 should contain Task 11–15
 
-Task 1
-Task 2
-Task 3
-...
-Task 10
+However, the current implementation calculates the pagination offset incorrectly.
 
-However, the API returns only tasks 11–15:
+As a result:
 
-Task 11
-Task 12
-Task 13
-Task 14
-Task 15
+- page=1 returns Task 11–15 instead of Task 1–10.
+- page=2 returns an empty array instead of Task 11–15.
 
-Therefore, only 5 tasks are returned instead of 10.
 
-Steps to Reproduce
+## Steps to Reproduce
 
-1. Create 15 tasks
+### 1. Create 15 tasks
 
-For example:
+Create the following tasks:
 
 Task 1
 Task 2
@@ -58,13 +50,17 @@ Task 13
 Task 14
 Task 15
 
-2. Send the request
+
+### 2. Test Page 1
+
+Send the request:
 
 GET /tasks?page=1&limit=10
 
-3. Expected Result
 
-The API should return 10 tasks:
+### Expected Result
+
+The API should return the first 10 tasks:
 
 Task 1
 Task 2
@@ -81,7 +77,8 @@ Expected response length:
 
 10
 
-4. Actual Result
+
+### Actual Result
 
 The API returns:
 
@@ -95,14 +92,17 @@ Actual response length:
 
 5
 
-Test Evidence
 
-The API test failed with:
+### 3. Test Page 2
 
-Expected length: 10
-Received length: 5
+Send the request:
 
-The returned tasks were:
+GET /tasks?page=2&limit=10
+
+
+### Expected Result
+
+The API should return:
 
 Task 11
 Task 12
@@ -110,52 +110,167 @@ Task 13
 Task 14
 Task 15
 
-The same problem was found by both:
+Expected response length:
 
-tests/taskAPI.test.js
-tests/taskService.test.js
+5
 
-Root Cause
 
-The problem is in src/services/taskService.js:
+### Actual Result
+
+The API returns:
+
+[]
+
+Actual response length:
+
+0
+
+
+## Test Evidence
+
+The pagination bug was detected by both the API integration tests and the service unit tests.
+
+### API Test — Page 1
+
+Expected length:
+
+10
+
+Received length:
+
+5
+
+Returned tasks:
+
+Task 11
+Task 12
+Task 13
+Task 14
+Task 15
+
+
+### API Test — Page 2
+
+Expected length:
+
+5
+
+Received length:
+
+0
+
+Returned array:
+
+[]
+
+
+### Unit Test — Page 1
+
+The service test:
+
+taskService.getPaginated(1, 10)
+
+expects:
+
+10 tasks
+Task 1 to Task 10
+
+but receives:
+
+5 tasks
+Task 11 to Task 15
+
+
+### Unit Test — Page 2
+
+The service test:
+
+taskService.getPaginated(2, 10)
+
+expects:
+
+5 tasks
+Task 11 to Task 15
+
+but receives:
+
+0 tasks
+[]
+
+
+## Root Cause
+
+The problem is in:
+
+src/services/taskService.js
+
+The current pagination logic is equivalent to:
 
 const getPaginated = (page, limit) => {
-  const offset = page * limit;
-  return tasks.slice(offset, offset + limit);
+    const offset = page * limit;
+    return tasks.slice(offset, offset + limit);
 };
 
-For:
+
+The problem is the calculation:
+
+page * limit
+
+The API uses 1-based page numbers, while JavaScript arrays use zero-based indexes.
+
+For example:
 
 page = 1
 limit = 10
 
-the code calculates:
+The current calculation is:
 
 offset = 1 * 10
        = 10
 
-Then it executes:
+Then the service executes:
 
 tasks.slice(10, 20)
 
-JavaScript arrays use zero-based indexes. Therefore, index 10 represents the 11th task.
+Array index 10 represents the 11th task.
 
-This causes page 1 to start from Task 11.
+Therefore, page 1 incorrectly starts from Task 11.
 
-Expected Pagination Logic
 
-For page 1, the offset should be 0.
-
-The correct calculation is:
-
-const offset = (page - 1) * limit;
+## Page 2 Root Cause
 
 For:
 
-page = 1
+page = 2
 limit = 10
 
-the calculation becomes:
+The current calculation is:
+
+offset = 2 * 10
+       = 20
+
+Then the service effectively executes:
+
+tasks.slice(20, 30)
+
+Only 15 tasks exist.
+
+Therefore, the result is:
+
+[]
+
+
+## Expected Pagination Logic
+
+For 1-based pagination, the offset should be:
+
+const offset = (page - 1) * limit;
+
+
+For page 1:
+
+page = 1
+limit = 10
 
 offset = (1 - 1) * 10
        = 0
@@ -166,9 +281,27 @@ tasks.slice(0, 10)
 
 returns:
 
-Task 1 → Task 10
+Task 1 to Task 10
 
-Suggested Fix
+
+For page 2:
+
+page = 2
+limit = 10
+
+offset = (2 - 1) * 10
+       = 10
+
+Then:
+
+tasks.slice(10, 20)
+
+returns:
+
+Task 11 to Task 15.
+
+
+## Suggested Fix
 
 Change:
 
@@ -178,62 +311,162 @@ to:
 
 const offset = (page - 1) * limit;
 
+
 The corrected function should be:
 
 const getPaginated = (page, limit) => {
-  const offset = (page - 1) * limit;
-  return tasks.slice(offset, offset + limit);
+    const offset = (page - 1) * limit;
+
+    return tasks.slice(offset, offset + limit);
 };
 
-Verification After Fix
 
-Run:
+## Test Results Before Fix
+
+Current test result:
+
+Test Suites: 2 failed, 2 total
+Tests:       4 failed, 29 passed, 33 total
+
+
+### Failed Tests
+
+1. Task API
+   GET /tasks?page=1&limit=10 should return first page
+
+2. Task API
+   GET /tasks?page=2&limit=10 should return second page
+
+3. Task Service
+   it will return the first page of paginated tasks
+
+4. Task Service
+   it will return the second page of paginated tasks
+
+
+### Passed Tests
+
+29 tests passed.
+
+The remaining API and service tests are passing.
+
+
+## Impact
+
+The bug affects users who use task pagination.
+
+Because of this issue:
+
+- The first page does not show the first 10 tasks.
+- The first page incorrectly shows tasks from the second page.
+- The second page shows no tasks.
+- Users cannot correctly navigate through paginated tasks.
+
+
+## Severity and Priority
+
+Severity: Medium
+
+The application and other task operations continue to work, but pagination produces incorrect results.
+
+Priority: High
+
+Pagination is a core API feature and should return the correct set of tasks for each requested page.
+
+
+## Test Coverage
+
+The bug is covered at two levels.
+
+### API Integration Testing
+
+Test file:
+
+tests/taskAPI.test.js
+
+Tests:
+
+GET /tasks?page=1&limit=10
+GET /tasks?page=2&limit=10
+
+
+### Unit Testing
+
+Test file:
+
+tests/taskService.test.js
+
+Tests:
+
+taskService.getPaginated(1, 10)
+taskService.getPaginated(2, 10)
+
+
+Testing at both levels confirms that the issue originates in the pagination logic used by the service and is exposed through the API.
+
+
+## Verification After Fix
+
+After applying the fix, run:
 
 npm test
 
-The following tests should pass:
+The following API tests should pass:
 
-GET /tasks?page=1&limit=10
+GET /tasks?page=1&limit=10 should return first page
 
-and:
+GET /tasks?page=2&limit=10 should return second page
 
-Task Service › it will return paginated tasks
 
-Test Summary Before Fix
+The following service tests should also pass:
 
-Test Suites: 2 failed, 2 total
-Tests:       2 failed, 29 passed, 31 total
+it will return the first page of paginated tasks
 
-Both failures are caused by the same pagination bug.
+it will return the second page of paginated tasks
 
-Bug ID
 
-Issue
+The complete test suite should pass after the fix.
 
-API Test
 
-Unit Test
+## Bug Status
 
-Status
+Bug ID: BUG-001
 
-BUG-001
+Issue: Incorrect pagination offset
 
-Incorrect pagination offset
+API Test: FAILED
 
-❌
+Unit Test: FAILED
 
-❌
+Status: OPEN
 
-Open
 
-Testing Workflow
+## Testing Workflow
 
-1. API Testing       ✅
-2. Unit Testing      ✅
-3. Bug Report        ✅
-4. Fix Bugs          ⏳
-5. Run npm test      ⏳
-6. Verify all pass   ⏳
-7. Commit fixes      ⏳
+1. API Testing       DONE
+2. Unit Testing      DONE
+3. Bug Report        DONE
+4. Fix Bug           PENDING
+5. Run npm test      PENDING
+6. Verify all pass   PENDING
+7. Commit fix        PENDING
+8. Push changes      PENDING
 
-Note: This bug report documents the bug found during testing. The bug should be fixed separately, followed by running the complete test suite again.
+
+## Conclusion
+
+The API and service tests successfully identified a real pagination defect in the existing implementation.
+
+The root cause is the use of:
+
+page * limit
+
+instead of:
+
+(page - 1) * limit
+
+Because the API uses 1-based pagination and JavaScript arrays use zero-based indexes, the current calculation skips the first page and causes the second page to return an empty result.
+
+No production code has been changed as part of identifying and documenting this bug.
+
+The bug remains open until the pagination implementation is fixed and the complete test suite passes.
