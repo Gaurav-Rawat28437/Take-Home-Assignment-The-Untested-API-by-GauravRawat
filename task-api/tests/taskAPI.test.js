@@ -102,9 +102,20 @@ describe("Task API", () => {
 
 
     //for get paginated tasks
-    test("GET /tasks?page=1&limit=10 should return paginated tasks", async () => {
 
-        //it will create 15 tasks
+    // for paginated tasks
+    //
+    // Pagination is 1-based:
+    // page 1 = Task 1 to Task 10
+    // page 2 = Task 11 to Task 15
+    //
+    // The current service implementation has a pagination bug.
+    // These tests are expected to FAIL until the service is fixed.
+
+    // page 1
+    test("GET /tasks?page=1&limit=10 should return first page", async () => {
+
+        // Create 15 tasks
         for (let i = 1; i <= 15; i++) {
             await request(app)
                 .post("/tasks")
@@ -113,18 +124,39 @@ describe("Task API", () => {
                 })
         }
 
-        //it wil get first page
         const response = await request(app)
             .get("/tasks?page=1&limit=10")
 
-        console.log(response.status)
-        console.log(response.body)
-
-
         expect(response.status).toBe(200)
+
+        // Page 1 should contain Task 1 to Task 10
         expect(response.body).toHaveLength(10)
         expect(response.body[0].title).toBe("Task 1")
         expect(response.body[9].title).toBe("Task 10")
+    })
+
+
+    // page 2
+    test("GET /tasks?page=2&limit=10 should return second page", async () => {
+
+        // Create 15 tasks
+        for (let i = 1; i <= 15; i++) {
+            await request(app)
+                .post("/tasks")
+                .send({
+                    title: `Task ${i}`
+                })
+        }
+
+        const response = await request(app)
+            .get("/tasks?page=2&limit=10")
+
+        expect(response.status).toBe(200)
+
+        // Page 2 should contain Task 11 to Task 15
+        expect(response.body).toHaveLength(5)
+        expect(response.body[0].title).toBe("Task 11")
+        expect(response.body[4].title).toBe("Task 15")
     })
 
 
@@ -296,43 +328,43 @@ describe("Task API", () => {
         expect(response.body).toHaveProperty("overdue")
     })
 
-    
+
     //for correct task statistics
-   test("GET /tasks/stats should return correct task statistics", async () => {
+    test("GET /tasks/stats should return correct task statistics", async () => {
 
-    await request(app)
-        .post("/tasks")
-        .send({
-            title: "Todo task",
-            status: "todo"
-        })
+        await request(app)
+            .post("/tasks")
+            .send({
+                title: "Todo task",
+                status: "todo"
+            })
 
-    await request(app)
-        .post("/tasks")
-        .send({
-            title: "In progress task",
-            status: "in_progress"
-        })
+        await request(app)
+            .post("/tasks")
+            .send({
+                title: "In progress task",
+                status: "in_progress"
+            })
 
-    const doneResponse = await request(app)
-        .post("/tasks")
-        .send({
-            title: "Done task"
-        })
+        const doneResponse = await request(app)
+            .post("/tasks")
+            .send({
+                title: "Done task"
+            })
 
-    await request(app)
-        .patch(`/tasks/${doneResponse.body.id}/complete`)
+        await request(app)
+            .patch(`/tasks/${doneResponse.body.id}/complete`)
 
-    const response = await request(app)
-        .get("/tasks/stats")
+        const response = await request(app)
+            .get("/tasks/stats")
 
-    expect(response.status).toBe(200)
+        expect(response.status).toBe(200)
 
-    expect(response.body.todo).toBe(1)
-    expect(response.body.in_progress).toBe(1)
-    expect(response.body.done).toBe(1)
-    expect(response.body.overdue).toBe(0)
-})
+        expect(response.body.todo).toBe(1)
+        expect(response.body.in_progress).toBe(1)
+        expect(response.body.done).toBe(1)
+        expect(response.body.overdue).toBe(0)
+    })
 
 
     //for invalide update
