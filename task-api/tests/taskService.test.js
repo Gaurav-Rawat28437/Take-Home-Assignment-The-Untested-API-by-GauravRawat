@@ -345,5 +345,20 @@ describe("Task Service", () => {
         expect(tasks[0].title).toBe("High task")
     })
 
+     // for assignee filter
+    test("it will return tasks by assignee", () => {
+        const createdTask = taskService.create({
+            title: "Assigned task"
+        })
 
+        taskService.assignTask(createdTask.id, "Gaurav")
+
+        const tasks = taskService.getByAssignee("Gaurav")
+
+        expect(tasks).toHaveLength(1)
+        expect(tasks[0].assignee).toBe("Gaurav")
+    })
+
+
+    
 })
