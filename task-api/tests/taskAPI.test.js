@@ -559,4 +559,25 @@ describe("Task API", () => {
         expect(response.body).toHaveLength(1)
         expect(response.body[0].priority).toBe("high")
     })
+
+    // Test filtering tasks by assignee
+    test("GET /tasks?assignee=Gaurav should return assigned tasks", async () => {
+        const createResponse = await request(app)
+            .post("/tasks")
+            .send({
+                title: "Assigned task"
+            })
+
+        await request(app)
+            .patch(`/tasks/${createResponse.body.id}/assign`)
+            .send({
+                assignee: "Gaurav"
+            })
+
+        const response = await request(app).get("/tasks?assignee=Gaurav")
+
+        expect(response.status).toBe(200)
+        expect(response.body).toHaveLength(1)
+        expect(response.body[0].assignee).toBe("Gaurav")
+    })
 })
