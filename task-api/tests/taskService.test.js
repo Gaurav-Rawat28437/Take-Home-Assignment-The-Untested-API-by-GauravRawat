@@ -326,4 +326,24 @@ describe("Task Service", () => {
         expect(result.alreadyAssigned).toBe(true)
     })
 
+
+    // for priority filter
+    test("it will return tasks by priority", () => {
+        taskService.create({
+            title: "High task",
+            priority: "high"
+        })
+
+        taskService.create({
+            title: "Low task",
+            priority: "low"
+        })
+
+        const tasks = taskService.getByPriority("high")
+
+        expect(tasks).toHaveLength(1)
+        expect(tasks[0].title).toBe("High task")
+    })
+
+
 })
