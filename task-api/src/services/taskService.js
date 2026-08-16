@@ -123,6 +123,10 @@ const assignTask = (id, assignee) => {
   return updated
 }
 
+// Filter tasks by priority
+const getByPriority = (priority) => tasks.filter((t) => t.priority === priority)
+
+
 module.exports = {
   getAll,
   findById,
@@ -134,5 +138,6 @@ module.exports = {
   remove,
   completeTask,
   _reset,
-  assignTask
+  assignTask,
+  getByPriority
 };

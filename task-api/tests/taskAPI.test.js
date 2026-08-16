@@ -542,4 +542,21 @@ describe("Task API", () => {
         expect(response.body.error).toBe("Task not found")
     })
 
+
+    // for priority filtering
+    test("GET /tasks?priority=high should return high priority tasks", async () => {
+        await request(app)
+            .post("/tasks")
+            .send({
+                title: "High priority task",
+                priority: "high"
+            })
+
+        const response = await request(app)
+            .get("/tasks?priority=high")
+
+        expect(response.status).toBe(200)
+        expect(response.body).toHaveLength(1)
+        expect(response.body[0].priority).toBe("high")
+    })
 })

@@ -8,12 +8,20 @@ router.get('/stats', (req, res) => {
   res.json(stats);
 });
 
+// here i add new feature filter by priority
 router.get('/', (req, res) => {
-  const { status, page, limit } = req.query;
+  const { status, page, limit, priority } = req.query;
 
   if (status) {
     const tasks = taskService.getByStatus(status);
     return res.json(tasks);
+  }
+
+  // filter tasks by priority
+  // example: GET /tasks?priority=high
+  if (priority) {
+    const tasks = taskService.getByPriority(priority)
+    return res.json(tasks)
   }
 
   if (page !== undefined || limit !== undefined) {
