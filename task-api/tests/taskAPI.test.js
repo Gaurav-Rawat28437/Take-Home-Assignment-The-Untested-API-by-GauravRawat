@@ -515,4 +515,31 @@ describe("Task API", () => {
         expect(response.body.error).toBe("Task is already assigned")
     })
 
+
+    //for task by id
+    test("GET /tasks/:id should return a task", async () => {
+        const createResponse = await request(app)
+            .post("/tasks")
+            .send({
+                title: "Learn Node.js"
+            })
+
+        const id = createResponse.body.id
+
+        const response = await request(app).get(`/tasks/${id}`)
+
+        expect(response.status).toBe(200)
+        expect(response.body.id).toBe(id)
+        expect(response.body.title).toBe("Learn Node.js")
+    })
+
+    // for task by id when task does not exist
+    test("GET /tasks/:id should return 404 when task does not exist", async () => {
+        const response = await request(app)
+            .get("/tasks/non-existing-id")
+
+        expect(response.status).toBe(404)
+        expect(response.body.error).toBe("Task not found")
+    })
+
 })

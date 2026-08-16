@@ -102,4 +102,18 @@ router.patch('/:id/assign', (req, res) => {
   res.json(task)
 })
 
+
+//get task by id
+router.get('/:id', (req, res) => {
+  const task = taskService.findById(req.params.id)
+
+  if (!task) {
+    return res.status(404).json({
+      error: "Task not found"
+    })
+  }
+
+  res.json(task)
+})
+
 module.exports = router;
