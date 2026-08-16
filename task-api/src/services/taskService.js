@@ -129,6 +129,13 @@ const getByPriority = (priority) => tasks.filter((t) => t.priority === priority)
 // Get tasks by assignee
 const getByAssignee = (assignee) =>tasks.filter((t) => t.assignee === assignee)
 
+//Get task by search
+const searchTasks = (search) => {
+    return tasks.filter((task) =>
+        task.title.toLowerCase().includes(search.toLowerCase())
+    )
+}
+
 module.exports = {
   getAll,
   findById,
@@ -142,5 +149,6 @@ module.exports = {
   _reset,
   assignTask,
   getByPriority,
-  getByAssignee
+  getByAssignee,
+  searchTasks
 };

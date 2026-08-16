@@ -580,4 +580,44 @@ describe("Task API", () => {
         expect(response.body).toHaveLength(1)
         expect(response.body[0].assignee).toBe("Gaurav")
     })
+
+
+    // for searching tasks by title
+    test("GET /tasks?search=login should return matching tasks", async () => {
+        await request(app)
+            .post("/tasks")
+            .send({
+                title: "Fix login page"
+            })
+
+        await request(app)
+            .post("/tasks")
+            .send({
+                title: "Create dashboard"
+            })
+
+        const response = await request(app)
+            .get("/tasks?search=login")
+
+        expect(response.status).toBe(200)
+        expect(response.body).toHaveLength(1)
+        expect(response.body[0].title).toBe("Fix login page")
+    })
+
+
+    //for insensitive case while seraching
+    test("GET /tasks?search=LOGIN should be case insensitive", async () => {
+    await request(app)
+        .post("/tasks")
+        .send({
+            title: "Fix login page"
+        })
+
+    const response = await request(app)
+        .get("/tasks?search=LOGIN")
+
+    expect(response.status).toBe(200)
+    expect(response.body).toHaveLength(1)
+    expect(response.body[0].title).toBe("Fix login page")
+})
 })

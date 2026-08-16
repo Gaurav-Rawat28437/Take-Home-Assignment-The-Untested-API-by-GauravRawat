@@ -10,7 +10,7 @@ router.get('/stats', (req, res) => {
 
 // here i add new feature filter by priority,assignee
 router.get('/', (req, res) => {
-  const { status, page, limit, priority, assignee } = req.query;
+  const { status, page, limit, priority, assignee, search } = req.query;
 
   if (status) {
     const tasks = taskService.getByStatus(status);
@@ -26,11 +26,18 @@ router.get('/', (req, res) => {
 
 
   // Filter tasks by assignee
-  // Example: GET /tasks?assignee=Gaurav
+  // Example: GET /tasks?assignee=react
   if (assignee) {
     const tasks = taskService.getByAssignee(assignee)
     return res.json(tasks)
   }
+
+  // Filter tasks by search
+  // Example: GET /tasks?search=task1
+  if (search) {
+    const tasks = taskService.searchTasks(search);
+    return res.json(tasks);
+}
 
   if (page !== undefined || limit !== undefined) {
     const pageNum = parseInt(page) || 1;
