@@ -62,69 +62,69 @@ describe("Task Service", () => {
 
     // for task pagination
 
-// We are testing 1-based pagination here.
-//
-// page 1 = first page
-// page 2 = second page
-//
-// Expected behavior:
-// page 1, limit 10 → Task 1 to Task 10
-// page 2, limit 10 → Task 11 to Task 15
-//
-// NOTE:
-// The current service implementation uses:
-// const offset = page * limit
+    // We are testing 1-based pagination here.
+    //
+    // page 1 = first page
+    // page 2 = second page
+    //
+    // Expected behavior:
+    // page 1, limit 10 → Task 1 to Task 10
+    // page 2, limit 10 → Task 11 to Task 15
+    //
+    // NOTE:
+    // The current service implementation uses:
+    // const offset = page * limit
 
-// That means the current implementation treats pagination as 0-based
-// Therefore, this test is expected to FAIL
-// The test helps us identify the pagination bug
-// We will fix the service implementation later
+    // That means the current implementation treats pagination as 0-based
+    // Therefore, this test is expected to FAIL
+    // The test helps us identify the pagination bug
+    // We will fix the service implementation later
 
-test("it will return the first page of paginated tasks", () => {
+    test("it will return the first page of paginated tasks", () => {
 
-    // Create 15 tasks
-    for (let i = 1; i <= 15; i++) {
-        taskService.create({
-            title: `Task ${i}`
-        })
-    }
+        // Create 15 tasks
+        for (let i = 1; i <= 15; i++) {
+            taskService.create({
+                title: `Task ${i}`
+            })
+        }
 
-    // Request page 1 with 10 tasks per page
-    // According to our expected API behavior
-    // page 1 should return Task 1 to Task 10
-    const tasks = taskService.getPaginated(1, 10)
+        // Request page 1 with 10 tasks per page
+        // According to our expected API behavior
+        // page 1 should return Task 1 to Task 10
+        const tasks = taskService.getPaginated(1, 10)
 
-    
-    expect(tasks).toHaveLength(10)// First page should contain 10 tasks
-    expect(tasks[0].title).toBe("Task 1")// First task should be Task 1
-    expect(tasks[9].title).toBe("Task 10") // Last task should be Task 10
-})
 
-// Test page 2
+        expect(tasks).toHaveLength(10)// First page should contain 10 tasks
+        expect(tasks[0].title).toBe("Task 1")// First task should be Task 1
+        expect(tasks[9].title).toBe("Task 10") // Last task should be Task 10
+    })
 
-// page 2 with limit 10 should return:
-// Task 11, Task 12, Task 13, Task 14, Task 15
-// This test verifies that pagination moves to the next page correctly
+    // Test page 2
 
-test("it will return the second page of paginated tasks", () => {
+    // page 2 with limit 10 should return:
+    // Task 11, Task 12, Task 13, Task 14, Task 15
+    // This test verifies that pagination moves to the next page correctly
 
-    // Create 15 tasks
-    for (let i = 1; i <= 15; i++) {
-        taskService.create({
-            title: `Task ${i}`
-        })
-    }
+    test("it will return the second page of paginated tasks", () => {
 
-    // Request page 2 with 10 tasks per page
-    const tasks = taskService.getPaginated(2, 10)
+        // Create 15 tasks
+        for (let i = 1; i <= 15; i++) {
+            taskService.create({
+                title: `Task ${i}`
+            })
+        }
 
-    expect(tasks).toHaveLength(5)// Only 5 tasks are available on the second page
-    expect(tasks[0].title).toBe("Task 11")  // First task on page 2 should be Task 11
-    expect(tasks[4].title).toBe("Task 15")  // Last task on page 2 should be Task 15
-})
+        // Request page 2 with 10 tasks per page
+        const tasks = taskService.getPaginated(2, 10)
 
-   
-    
+        expect(tasks).toHaveLength(5)// Only 5 tasks are available on the second page
+        expect(tasks[0].title).toBe("Task 11")  // First task on page 2 should be Task 11
+        expect(tasks[4].title).toBe("Task 15")  // Last task on page 2 should be Task 15
+    })
+
+
+
 
 
 
@@ -283,6 +283,47 @@ test("it will return the second page of paginated tasks", () => {
         const result = taskService.completeTask("does-not-exist")
 
         expect(result).toBeNull()
+    })
+
+    // for assign task
+    test("it will assign a task", () => {
+        const createdTask = taskService.create({
+            title: "Learn Jest"
+        })
+
+        const assignedTask = taskService.assignTask(
+            createdTask.id,
+            "Gaurav"
+        )
+
+        expect(assignedTask.assignee).toBe("Gaurav")
+        expect(assignedTask.id).toBe(createdTask.id)
+    })
+
+    // for assigning task that does not exist
+    test("it will return null when assigning a task that does not exist", () => {
+        const result = taskService.assignTask(
+            "does-not-exist",
+            "Gaurav"
+        )
+
+        expect(result).toBeNull()
+    })
+
+    // for already assigned task
+    test("it will not assign a task that is already assigned", () => {
+        const createdTask = taskService.create({
+            title: "Learn Jest"
+        })
+
+        taskService.assignTask(createdTask.id, "Gaurav")
+
+        const result = taskService.assignTask(
+            createdTask.id,
+            "UV"
+        )
+
+        expect(result.alreadyAssigned).toBe(true)
     })
 
 })

@@ -64,8 +64,8 @@ describe("Task API", () => {
                 priority: "high"
             })
 
-        console.log(response.status)
-        console.log(response.body)
+        // console.log(response.status)
+        // console.log(response.body)
 
         expect(response.status).toBe(400)
         expect(response.body.error).toBe("title is required and must be a non-empty string")
@@ -88,8 +88,8 @@ describe("Task API", () => {
         const response = await request(app)
             .get("/tasks?status=todo")
 
-        console.log(response.status)
-        console.log(response.body)
+        // console.log(response.status)
+        // console.log(response.body)
 
 
         expect(response.status).toBe(200)
@@ -181,8 +181,8 @@ describe("Task API", () => {
                 priority: "high"
             })
 
-        console.log(response.status)
-        console.log(response.body)
+        // console.log(response.status)
+        // console.log(response.body)
 
         expect(response.status).toBe(200)
         expect(response.body.id).toBe(taskId)
@@ -199,8 +199,8 @@ describe("Task API", () => {
                 title: "Updated task"
             })
 
-        console.log(response.status)
-        console.log(response.body)
+        // console.log(response.status)
+        // console.log(response.body)
 
         expect(response.status).toBe(404)
         expect(response.body.error).toBe("Task not found")
@@ -222,7 +222,7 @@ describe("Task API", () => {
         const response = await request(app)
             .delete(`/tasks/${taskId}`)
 
-        console.log(response.status)
+        // console.log(response.status)
 
         expect(response.status).toBe(204)
     })
@@ -233,8 +233,8 @@ describe("Task API", () => {
         const response = await request(app)
             .delete("/tasks/does-not-exist")
 
-        console.log(response.status)
-        console.log(response.body)
+        // console.log(response.status)
+        // console.log(response.body)
 
         expect(response.status).toBe(404)
         expect(response.body.error).toBe("Task not found")
@@ -256,8 +256,8 @@ describe("Task API", () => {
         // Complete the task
         const response = await request(app).patch(`/tasks/${taskId}/complete`)
 
-        console.log(response.status)
-        console.log(response.body)
+        // console.log(response.status)
+        // console.log(response.body)
 
         expect(response.status).toBe(200)
         expect(response.body.id).toBe(taskId)
@@ -270,8 +270,8 @@ describe("Task API", () => {
 
         const response = await request(app).patch("/tasks/non-existing-id/complete")
 
-        console.log(response.status)
-        console.log(response.body)
+        // console.log(response.status)
+        // console.log(response.body)
 
         expect(response.status).toBe(404)
         expect(response.body.error).toBe("Task not found")
@@ -287,8 +287,8 @@ describe("Task API", () => {
                 title: ""
             })
 
-        console.log(response.status)
-        console.log(response.body)
+        // console.log(response.status)
+        // console.log(response.body)
 
         expect(response.status).toBe(400)
         expect(response.body.error).toBe(
@@ -306,8 +306,8 @@ describe("Task API", () => {
                 priority: "urgent"
             })
 
-        console.log(response.status)
-        console.log(response.body)
+        // console.log(response.status)
+        // console.log(response.body)
 
         expect(response.status).toBe(400)
     })
@@ -317,8 +317,8 @@ describe("Task API", () => {
         const response = await request(app)
             .get("/tasks/stats")
 
-        console.log(response.status)
-        console.log(response.body)
+        // console.log(response.status)
+        // console.log(response.body)
 
         expect(response.status).toBe(200)
 
@@ -384,8 +384,8 @@ describe("Task API", () => {
                 priority: "urgent"
             })
 
-        console.log(response.status)
-        console.log(response.body)
+        // console.log(response.status)
+        // console.log(response.body)
 
         expect(response.status).toBe(400)
     })
@@ -404,7 +404,7 @@ describe("Task API", () => {
         const deleteResponse = await request(app)
             .delete(`/tasks/${taskId}`)
 
-        console.log(deleteResponse.status)
+        // console.log(deleteResponse.status)
 
         expect(deleteResponse.status).toBe(204)
 
