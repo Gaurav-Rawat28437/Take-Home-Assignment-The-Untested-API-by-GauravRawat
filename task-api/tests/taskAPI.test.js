@@ -417,4 +417,102 @@ describe("Task API", () => {
 
         expect(deletedTask).toBeUndefined()
     })
+
+    //for assign an assigned task
+    test("it will assign an unassigned task", async () => {
+        const createResponse = await request(app)
+            .post("/tasks")
+            .send({
+                title: "Task to assign"
+            })
+
+        const taskId = createResponse.body.id
+
+        const response = await request(app)
+            .patch(`/tasks/${taskId}/assign`)
+            .send({
+                assignee: "Gaurav"
+            })
+
+        expect(response.status).toBe(200)
+        expect(response.body.assignee).toBe("Gaurav")
+    })
+
+    //for assignee is not found
+    test("it will return 400 when assignee is missing", async () => {
+        const createResponse = await request(app)
+            .post("/tasks")
+            .send({
+                title: "Task to assign"
+            })
+
+        const taskId = createResponse.body.id
+
+        const response = await request(app)
+            .patch(`/tasks/${taskId}/assign`)
+            .send({})
+
+        expect(response.status).toBe(400)
+        expect(response.body.error).toBe("assignee is required and must be a non-empty string")
+    })
+
+    //for assignee is empty
+    test("it will return 400 when assignee is empty", async () => {
+        const createResponse = await request(app)
+            .post("/tasks")
+            .send({
+                title: "Task to assign"
+            })
+
+        const taskId = createResponse.body.id
+
+        const response = await request(app)
+            .patch(`/tasks/${taskId}/assign`)
+            .send({
+                assignee: "   "
+            })
+
+        expect(response.status).toBe(400)
+    })
+
+    //for task doesn't exit while assignment
+    test("it will return 404 when task does not exist", async () => {
+        const response = await request(app)
+            .patch("/tasks/non-existing-id/assign")
+            .send({
+                assignee: "Gaurav"
+            })
+
+        expect(response.status).toBe(404)
+        expect(response.body.error).toBe("Task not found")
+    })
+
+    //for task is already assign
+    test("it will return 409 when task is already assigned", async () => {
+        const createResponse = await request(app)
+            .post("/tasks")
+            .send({
+                title: "Task to assign"
+            })
+
+        const taskId = createResponse.body.id
+
+        // First assignment
+        await request(app)
+            .patch(`/tasks/${taskId}/assign`)
+            .send({
+                assignee: "Gaurav"
+            })
+
+        // Try to assign the same task again
+        const response = await request(app)
+            .patch(`/tasks/${taskId}/assign`)
+            .send({
+                assignee: "UV"
+            })
+
+        expect(response.status).toBe(409)
+        expect(response.body.error).toBe("Task is already assigned")
+    })
+
 })

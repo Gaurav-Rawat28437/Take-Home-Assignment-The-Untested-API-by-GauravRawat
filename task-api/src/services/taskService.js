@@ -10,21 +10,21 @@ const getByStatus = (status) => tasks.filter((t) => t.status.includes(status));
 
 const getPaginated = (page, limit) => {
 
-    // Pagination is 1-based:
-    // page 1 -> index 0
-    // page 2 -> index 10
-    // page 3 -> index 20
-    
-    // Subtract 1 because JavaScript arrays use zero-based indexing
-    // Using page * limit would make page 1 start at index 10
-    // incorrectly returning Task 11 instead of Task 1
-    
-    // The current API treats page=0 as page=1 because the route
-    // uses: parseInt(page) || 1
-    
-    // If page=0 should be supported as a valid first page
-    // the API pagination convention would need to be changed
-    // to zero-based pagination consistently in the route and service
+  // Pagination is 1-based:
+  // page 1 -> index 0
+  // page 2 -> index 10
+  // page 3 -> index 20
+
+  // Subtract 1 because JavaScript arrays use zero-based indexing
+  // Using page * limit would make page 1 start at index 10
+  // incorrectly returning Task 11 instead of Task 1
+
+  // The current API treats page=0 as page=1 because the route
+  // uses: parseInt(page) || 1
+
+  // If page=0 should be supported as a valid first page
+  // the API pagination convention would need to be changed
+  // to zero-based pagination consistently in the route and service
   const offset = (page - 1) * limit
 
   return tasks.slice(offset, offset + limit);
@@ -97,6 +97,32 @@ const _reset = () => {
   tasks = [];
 };
 
+
+//add new feature here
+
+// Assign a task only if it has not assigned
+const assignTask = (id, assignee) => {
+  const task = findById(id)
+
+  // Task does not exist
+  if (!task) return null
+
+  // already assign task
+  if (task.assignee) {
+    return { alreadyAssigned: true }
+  }
+
+  const updated = {
+    ...task,
+    assignee
+  }
+
+  const index = tasks.findIndex((t) => t.id === id);
+  tasks[index] = updated
+
+  return updated
+}
+
 module.exports = {
   getAll,
   findById,
@@ -108,4 +134,5 @@ module.exports = {
   remove,
   completeTask,
   _reset,
+  assignTask
 };
