@@ -360,5 +360,22 @@ describe("Task Service", () => {
     })
 
 
+    // for search
+    test("it will search tasks by title", () => {
+        taskService.create({
+            title: "Learn React"
+        })
+
+        taskService.create({
+            title: "Learn Node"
+        })
+
+        const tasks = taskService.searchTasks("react")
+
+        expect(tasks).toHaveLength(1)
+        expect(tasks[0].title).toBe("Learn React")
+    })
+
+
     
 })
