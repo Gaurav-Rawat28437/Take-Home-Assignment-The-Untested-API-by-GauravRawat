@@ -376,6 +376,32 @@ describe("Task Service", () => {
         expect(tasks[0].title).toBe("Learn React")
     })
 
+      // for multiple filters
+    test("it will filter tasks using multiple filters", () => {
+        const task1 = taskService.create({
+            title: "Learn React",
+            status: "todo",
+            priority: "high"
+        })
 
+        const task2 = taskService.create({
+            title: "Learn Node",
+            status: "todo",
+            priority: "low"
+        })
+
+        taskService.assignTask(task1.id, "Gaurav")
+        taskService.assignTask(task2.id, "UV")
+
+        const tasks = taskService.filterTasks({
+            status: "todo",
+            priority: "high",
+            assignee: "Gaurav",
+            search: "react"
+        })
+
+        expect(tasks).toHaveLength(1)
+        expect(tasks[0].title).toBe("Learn React")
+    })
     
 })
