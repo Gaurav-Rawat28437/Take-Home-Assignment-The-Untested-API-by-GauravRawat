@@ -127,13 +127,40 @@ const assignTask = (id, assignee) => {
 const getByPriority = (priority) => tasks.filter((t) => t.priority === priority)
 
 // Get tasks by assignee
-const getByAssignee = (assignee) =>tasks.filter((t) => t.assignee === assignee)
+const getByAssignee = (assignee) => tasks.filter((t) => t.assignee === assignee)
 
 //Get task by search
 const searchTasks = (search) => {
-    return tasks.filter((task) =>
-        task.title.toLowerCase().includes(search.toLowerCase())
-    )
+  return tasks.filter((task) =>
+    task.title.toLowerCase().includes(search.toLowerCase())
+  )
+}
+
+// Filter tasks using multiple filters
+const filterTasks = ({ status, priority, assignee, search }) => {
+  return tasks.filter((task) => {
+
+    if (status && task.status !== status) {
+      return false
+    }
+
+    if (priority && task.priority !== priority) {
+      return false
+    }
+
+    if (assignee && task.assignee !== assignee) {
+      return false
+    }
+
+    if (
+      search &&
+      !task.title.toLowerCase().includes(search.toLowerCase())
+    ) {
+      return false
+    }
+
+    return true
+  })
 }
 
 module.exports = {
@@ -150,5 +177,6 @@ module.exports = {
   assignTask,
   getByPriority,
   getByAssignee,
-  searchTasks
+  searchTasks,
+  filterTasks
 };

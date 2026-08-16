@@ -620,4 +620,85 @@ describe("Task API", () => {
     expect(response.body).toHaveLength(1)
     expect(response.body[0].title).toBe("Fix login page")
 })
+
+
+//for filter by priority and assignee
+test("it will filter tasks by priority and assignee", () => {
+    taskService.create({
+        title: "High Gaurav task",
+        priority: "high"
+    })
+
+    taskService.assignTask(
+        taskService.getAll()[0].id,
+        "Gaurav"
+    )
+
+    taskService.create({
+        title: "Low Gaurav task",
+        priority: "low"
+    })
+
+    taskService.assignTask(
+        taskService.getAll()[1].id,
+        "Gaurav"
+    )
+
+    taskService.create({
+        title: "High UV task",
+        priority: "high"
+    })
+
+    taskService.assignTask(
+        taskService.getAll()[2].id,
+        "UV"
+    )
+
+    const tasks = taskService.filterTasks({
+        priority: "high",
+        assignee: "Gaurav"
+    })
+
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].title).toBe("High Gaurav task")
+})
+
+    // for combined priority and assignee filtering
+    test("GET /tasks?priority=high&assignee=Gaurav should return matching tasks", async () => {
+        const task1 = await request(app)
+            .post("/tasks")
+            .send({
+                title: "High Gaurav task",
+                priority: "high"
+            })
+
+        await request(app)
+            .patch(`/tasks/${task1.body.id}/assign`)
+            .send({
+                assignee: "Gaurav"
+            })
+
+        const task2 = await request(app)
+            .post("/tasks")
+            .send({
+                title: "High UV task",
+                priority: "high"
+            })
+
+        await request(app)
+            .patch(`/tasks/${task2.body.id}/assign`)
+            .send({
+                assignee: "UV"
+            })
+
+        const response = await request(app)
+            .get("/tasks?priority=high&assignee=Gaurav")
+
+        expect(response.status).toBe(200)
+        expect(response.body).toHaveLength(1)
+        expect(response.body[0].title).toBe("High Gaurav task")
+        expect(response.body[0].priority).toBe("high")
+        expect(response.body[0].assignee).toBe("Gaurav")
+    })
+
 })

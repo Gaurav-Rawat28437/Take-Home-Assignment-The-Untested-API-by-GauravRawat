@@ -12,32 +12,17 @@ router.get('/stats', (req, res) => {
 router.get('/', (req, res) => {
   const { status, page, limit, priority, assignee, search } = req.query;
 
-  if (status) {
-    const tasks = taskService.getByStatus(status);
-    return res.json(tasks);
-  }
+  // Filter tasks using multiple filters
+  if (status || priority || assignee || search) {
+    const tasks = taskService.filterTasks({
+      status,
+      priority,
+      assignee,
+      search
+    })
 
-  // filter tasks by priority
-  // example: GET /tasks?priority=high
-  if (priority) {
-    const tasks = taskService.getByPriority(priority)
     return res.json(tasks)
   }
-
-
-  // Filter tasks by assignee
-  // Example: GET /tasks?assignee=react
-  if (assignee) {
-    const tasks = taskService.getByAssignee(assignee)
-    return res.json(tasks)
-  }
-
-  // Filter tasks by search
-  // Example: GET /tasks?search=task1
-  if (search) {
-    const tasks = taskService.searchTasks(search);
-    return res.json(tasks);
-}
 
   if (page !== undefined || limit !== undefined) {
     const pageNum = parseInt(page) || 1;
