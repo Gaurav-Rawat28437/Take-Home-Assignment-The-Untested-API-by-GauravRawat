@@ -9,7 +9,24 @@ const findById = (id) => tasks.find((t) => t.id === id);
 const getByStatus = (status) => tasks.filter((t) => t.status.includes(status));
 
 const getPaginated = (page, limit) => {
-  const offset = page * limit;
+
+    // Pagination is 1-based:
+    // page 1 -> index 0
+    // page 2 -> index 10
+    // page 3 -> index 20
+    
+    // Subtract 1 because JavaScript arrays use zero-based indexing
+    // Using page * limit would make page 1 start at index 10
+    // incorrectly returning Task 11 instead of Task 1
+    
+    // The current API treats page=0 as page=1 because the route
+    // uses: parseInt(page) || 1
+    
+    // If page=0 should be supported as a valid first page
+    // the API pagination convention would need to be changed
+    // to zero-based pagination consistently in the route and service
+  const offset = (page - 1) * limit
+
   return tasks.slice(offset, offset + limit);
 };
 
